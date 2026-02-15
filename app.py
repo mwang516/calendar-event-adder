@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timezone
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,8 +41,10 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/create", methods=["POST"])
+@app.route("/create", methods=["GET", "POST"])
 def create():
+    if request.method == "GET":
+        return redirect(url_for("index"))
     summary = request.form.get("summary")
     start = request.form.get("start")
     end = request.form.get("end")
