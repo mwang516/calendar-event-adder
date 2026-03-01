@@ -1,5 +1,6 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +13,7 @@ calendar_id = os.getenv('CALENDAR_ID')
 
 def run():
     description = input("Describe the event! ")
-    parsed_description = parse_event_description(description, reference_time=datetime.now(timezone.utc))
+    parsed_description = parse_event_description(description, reference_time=datetime.now(ZoneInfo("America/Los_Angeles")))
     event = parsed_to_event(parsed_description)
     start_display = parsed_description.get("start")
     end_display = parsed_description.get("end")

@@ -1,5 +1,6 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from flask import Flask, request, render_template, redirect, url_for
 from dotenv import load_dotenv
 
@@ -13,6 +14,21 @@ gcal_cred_path = "./gcal-event-adder-c77a1506daf4.json"
 calendar_id = os.getenv("CALENDAR_ID")
 
 
+def format_duration(start: str, end: str, is_full_day: bool) -> str:
+    def fmt_time(dt: datetime) -> str:
+        h = dt.hour % 12 or 12
+        return f"{h}:{dt.minute:02d} {'AM' if dt.hour < 12 else 'PM'}"
+
+    if is_full_day:
+        dt = datetime.strptime(start, "%Y-%m-%d")
+        return dt.strftime("%a, %b ") + str(dt.day) + dt.strftime(", %Y")
+    start_dt = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
+    end_dt = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S")
+    if start_dt.date() == end_dt.date():
+        return f"{start_dt.strftime('%a, %b ')}{start_dt.day}{start_dt.strftime(', %Y at ')}{fmt_time(start_dt)} – {fmt_time(end_dt)}"
+    return f"{start_dt.strftime('%a, %b ')}{start_dt.day}{start_dt.strftime(' at ')}{fmt_time(start_dt)} – {end_dt.strftime('%a, %b ')}{end_dt.day}{end_dt.strftime(' at ')}{fmt_time(end_dt)}"
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
@@ -22,11 +38,14 @@ def index():
         description = request.form.get("description", "")
         if not description.strip():
             return render_template("index.html", error="Please enter a description.")
-        parsed = parse_event_description(description.strip(), reference_time=datetime.now(timezone.utc))
+        parsed = parse_event_description(description.strip(), reference_time=datetime.now(ZoneInfo("America/Los_Angeles")))
         preview = {
             "summary": parsed["summary"],
             "start": parsed["start"],
             "end": parsed["end"],
+            "duration_display": format_duration(
+                parsed["start"], parsed["end"], parsed.get("is_full_day", False)
+            ),
             "location": parsed.get("location") or "(no location)",
             "is_full_day": parsed.get("is_full_day", False),
             "description": parsed.get("description") or "",

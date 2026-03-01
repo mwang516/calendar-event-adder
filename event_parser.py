@@ -8,7 +8,7 @@ EVENT_PARSER_PROMPT = "Parse the event description into JSON with: summary, desc
 
 def parse_event_description(description: str, reference_time: datetime) -> dict:
     ref = reference_time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    instructions = f"The current date and time is {ref} (UTC). Interpret all user-specified times (e.g. '5pm', '8pm') as Pacific time. {EVENT_PARSER_PROMPT}"
+    instructions = f"The current date and time is {ref} (Pacific). Interpret all user-specified times (e.g. '5pm', '8pm') as Pacific time. {EVENT_PARSER_PROMPT}"
     response = client.responses.create(
         model="gpt-5-mini",
         instructions=instructions,

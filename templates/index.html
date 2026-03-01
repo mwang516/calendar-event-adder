@@ -25,7 +25,7 @@
     <div class="preview">
       <h3>Preview</h3>
       <p><strong>{{ preview.summary }}</strong><br>
-      {{ preview.start }} – {{ preview.end }}<br>
+      {{ preview.duration_display }}<br>
       {{ preview.location }}</p>
       <form method="post" action="/create">
         <input type="hidden" name="summary" value="{{ preview.summary }}">
